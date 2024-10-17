@@ -1,36 +1,40 @@
 import React, { useState } from 'react';
 import Task from './Task';
 
+const Tasks = ({ tasks, onToggleCompletion, onRemove, onUpdate }) => {
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [updatedTaskTitle, setUpdatedTaskTitle] = useState('');
 
-const Tasks = ({ tasks, removeTask, updateTask }) => {
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(null);
-  const [updatedTask, setUpdatedTask] = useState('');
-
-  const handleEdit = (index) => {
-    setCurrentTaskIndex(index);
-    setUpdatedTask(tasks[index]);
+  const startEditing = (task) => {
+    setEditingIndex(task.id);
+    setUpdatedTaskTitle(task.title);
   };
 
-  const handleUpdate = (index) => {
-    if (updatedTask.trim() === '') return;
-    updateTask(index, updatedTask);
-    setCurrentTaskIndex(null);
-    setUpdatedTask('');
+  const cancelEditing = () => {
+    setEditingIndex(null);
+    setUpdatedTaskTitle('');
+  };
+
+  const handleUpdate = (taskId) => {
+    onUpdate(taskId, updatedTaskTitle);
+    setEditingIndex(null);
+    setUpdatedTaskTitle('');
   };
 
   return (
-    <div className='tasks'>
-      {tasks.map((task, index) => (
+    <div className="tasks">
+      {tasks.map((task) => (
         <Task
-          key={index}
+          key={task.id}
           task={task}
-          index={index}
-          isEditing={currentTaskIndex === index}
-          removeTask={removeTask}
-          handleEdit={handleEdit}
-          updatedTask={updatedTask}
-          setUpdatedTask={setUpdatedTask}
-          handleUpdate={handleUpdate}
+          isEditing={editingIndex === task.id}
+          updatedTaskTitle={updatedTaskTitle}
+          setUpdatedTaskTitle={setUpdatedTaskTitle}
+          onToggleCompletion={() => onToggleCompletion(task)}
+          onRemove={() => onRemove(task.id)}
+          onStartEditing={() => startEditing(task)}
+          onCancelEditing={cancelEditing}
+          onUpdate={() => handleUpdate(task.id)}
         />
       ))}
     </div>

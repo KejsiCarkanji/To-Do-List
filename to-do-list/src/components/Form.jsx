@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const Form = ({ handleSubmit }) => {
   const [task, setTask] = useState('');
@@ -8,21 +8,22 @@ const Form = ({ handleSubmit }) => {
   };
 
   const addTask = () => {
-    handleSubmit(task); 
-    setTask(''); 
+    handleSubmit(task);
+    setTask('');
   };
 
   return (
-    <div>
-      <label htmlFor="task">Add task</label>
+    <form className="task-form">
       <input
         id="task"
         type="text"
         value={task}
         onChange={handleChange}
+        className="task-input"
+        placeholder='Add a task'
       />
-      <button onClick={addTask}>Add</button>
-    </div>
+      <button type="button" onClick={addTask} className="task-button">Add</button>
+    </form>
   );
 };
 
