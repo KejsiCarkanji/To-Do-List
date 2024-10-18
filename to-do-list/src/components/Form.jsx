@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
-const Form = ({ handleSubmit }) => {
+const Form = memo(({ handleSubmit }) => {
   const [task, setTask] = useState('');
 
   const handleChange = (e) => {
@@ -25,6 +25,6 @@ const Form = ({ handleSubmit }) => {
       <button type="button" onClick={addTask} className="task-button">Add</button>
     </form>
   );
-};
+});
 
 export default Form;

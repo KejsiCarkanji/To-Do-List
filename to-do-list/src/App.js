@@ -1,21 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo,useCallback } from 'react';
 import './App.css';
 import Form from './components/Form';
 import Tasks from './components/Tasks';
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [uncompletedCount, setUncompletedCount] = useState(0);
 
   useEffect(() => {
     fetchTasks();
   }, []);
-
-  useEffect(() => {
-    setCompletedCount(tasks.filter(task => task.completed).length);
-    setUncompletedCount(tasks.filter(task => !task.completed).length);
-  }, [tasks]);
 
   const fetchTasks = async () => {
     try {
@@ -27,7 +20,7 @@ function App() {
     }
   };
 
-  const handleSubmit = async (newTask) => {
+  const handleSubmit = useCallback(async (newTask) => {
     if (newTask.trim() === '') return;
     try {
       const response = await fetch('http://localhost:8080/todos', {
@@ -42,27 +35,9 @@ function App() {
     } catch (error) {
       console.error('Error adding task:', error);
     }
-  };
+  }, []);
 
-  const handleCompletionToggle = async (task) => {
-    try {
-      const response = await fetch(`http://localhost:8080/todos/${task.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ completed: !task.completed }),
-      });
-      const updatedTask = await response.json();
-      setTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === task.id ? updatedTask : t))
-      );
-    } catch (error) {
-      console.error('Error updating task:', error);
-    }
-  };
-
-  const removeTask = async (taskId) => {
+  const removeTask = useCallback(async (taskId) => {
     try {
       await fetch(`http://localhost:8080/todos/${taskId}`, {
         method: 'DELETE',
@@ -71,9 +46,9 @@ function App() {
     } catch (error) {
       console.error('Error removing task:', error);
     }
-  };
+  }, []);
 
-  const updateTask = async (taskId, newTitle) => {
+  const updateTask = useCallback(async (taskId, newTitle) => {
     if (newTitle.trim() === '') return;
     try {
       const response = await fetch(`http://localhost:8080/todos/${taskId}`, {
@@ -92,20 +67,46 @@ function App() {
     } catch (error) {
       console.error('Error updating task:', error);
     }
-  };
+  }, []);
+
+  const handleCompletionToggle = useCallback(async (task) => {
+    try {
+      const response = await fetch(`http://localhost:8080/todos/${task.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ completed: !task.completed }),
+      });
+      const updatedTask = await response.json();
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === task.id ? updatedTask : t))
+      );
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  }, []);
+
+  const completedCount = useMemo(() => 
+    tasks.filter(task => task.completed).length,
+    [tasks]
+  );
+
+  const uncompletedCount = useMemo(() => 
+    tasks.length - completedCount, [tasks, completedCount]);
 
   return (
     <div className="container">
       <h1>My to-do list</h1>
       <Form handleSubmit={handleSubmit} />
       <div className="widgets">
-  <div className="widget">
-    <p>Completed: {completedCount}</p>
-  </div>
-  <div className="widget">
-    <p>Uncompleted: {uncompletedCount}</p>
-  </div>
-</div>
+        <div className="widget">
+          <p>Completed: {completedCount}</p>
+        </div>
+         <div className="widget">
+            <p>Uncompleted: {uncompletedCount}</p>
+         </div>
+      </div>
       <Tasks
         tasks={tasks}
         onToggleCompletion={handleCompletionToggle}
